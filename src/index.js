@@ -140,8 +140,10 @@ class Lad extends Dog {
 
     modifyTakenDamage(value, fromCard, gameContext, continuation) {
         const bonus = Lad.getBonus();
-        super.modifyTakenDamage(value - bonus, fromCard, gameContext, continuation);
+        const reducedDamage = Math.max(0, value - bonus);
+        super.modifyTakenDamage(reducedDamage, fromCard, gameContext, continuation);
     }
+    
 
     getDescriptions() {
         const descriptions = super.getDescriptions();
@@ -156,17 +158,70 @@ class Lad extends Dog {
 }
 
 
+class Rogue extends Creature {
+    constructor() {
+        super('Изгой', 2);
+    }
+
+    beforeAttack(gameContext, continuation) {
+        const { oppositePlayer } = gameContext;
+        const target = this.getNearestEnemy(gameContext);
+
+        if (!target) {
+            continuation();
+            return;
+        }
+
+        const stolenAbilities = [
+            'modifyDealedDamageToCreature',
+            'modifyDealedDamageToPlayer',
+            'modifyTakenDamage'
+        ];
+
+        // Получаем прототип цели
+        const targetPrototype = Object.getPrototypeOf(target);
+
+        // Проверим, что прототип не унаследован — похищаем только у него
+        const ownProps = Object.getOwnPropertyNames(targetPrototype);
+
+        for (const ability of stolenAbilities) {
+            if (ownProps.includes(ability)) {
+                this[ability] = targetPrototype[ability];
+        
+                // Удаляем из прототипа
+                delete targetPrototype[ability];
+        
+                // Удаляем у всех карт этого типа
+                for (const card of oppositePlayer.table) {
+                    if (Object.getPrototypeOf(card) === targetPrototype) {
+                        // Удалим метод у экземпляра, если есть
+                        if (card.hasOwnProperty(ability)) {
+                            delete card[ability];
+                        }
+                    }
+                }
+            }
+        }
+        
+
+        gameContext.updateView();
+        continuation();
+    }
+}
+
+
 // Колода Шерифа
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Rogue(),
 ];
 
 // Колода Бандита
 const banditStartDeck = [
     new Lad(),
-    new Lad()
+    new Lad(),
 ];
 
 // Создание и запуск игры
