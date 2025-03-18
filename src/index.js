@@ -103,19 +103,70 @@ class Gatling extends Creature {
     }
 }
 
+class Lad extends Dog {
+    static getInGameCount() {
+        return this.inGameCount || 0;
+    }
+
+    static setInGameCount(value) {
+        this.inGameCount = value;
+    }
+
+    static getBonus() {
+        const count = this.getInGameCount();
+        return (count * (count + 1)) / 2;
+    }
+
+    constructor() {
+        super();
+        this.name = 'Браток';
+        this.power = 2;
+    }
+
+    doAfterComingIntoPlay(gameContext, continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() + 1);
+        super.doAfterComingIntoPlay(gameContext, continuation);
+    }
+
+    doBeforeRemoving(gameContext, continuation) {
+        Lad.setInGameCount(Lad.getInGameCount() - 1);
+        super.doBeforeRemoving(gameContext, continuation);
+    }
+
+    modifyDealedDamageToCreature(value, toCard, gameContext, continuation) {
+        const bonus = Lad.getBonus();
+        super.modifyDealedDamageToCreature(value + bonus, toCard, gameContext, continuation);
+    }
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        const bonus = Lad.getBonus();
+        super.modifyTakenDamage(value - bonus, fromCard, gameContext, continuation);
+    }
+
+    getDescriptions() {
+        const descriptions = super.getDescriptions();
+        if (
+            Lad.prototype.hasOwnProperty('modifyDealedDamageToCreature') ||
+            Lad.prototype.hasOwnProperty('modifyTakenDamage')
+        ) {
+            descriptions.unshift('Чем их больше, тем они сильнее');
+        }
+        return descriptions;
+    }
+}
+
+
 // Колода Шерифа
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
-    new Gatling(),
 ];
 
 // Колода Бандита
 const banditStartDeck = [
-    new Trasher(),
-    new Dog(),
-    new Dog(),
+    new Lad(),
+    new Lad()
 ];
 
 // Создание и запуск игры
