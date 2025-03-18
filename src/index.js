@@ -3,29 +3,6 @@ import Game from './Game.js';
 import TaskQueue from './TaskQueue.js';
 import SpeedRate from './SpeedRate.js';
 
-
-
-class Duck extends Card {
-    constructor() {
-        super('Мирная утка', 2);
-    }
-
-    quacks() {
-        console.log('quack');
-    }
-
-    swims() {
-        console.log('float: both;');
-    }
-}
-
-// Класс Dog, наследуется от Card
-class Dog extends Card {
-    constructor() {
-        super('Пес-бандит', 3);
-    }
-}
-
 // Отвечает является ли карта уткой.
 function isDuck(card) {
     return card instanceof Duck;
@@ -50,26 +27,50 @@ function getCreatureDescription(card) {
     return 'Существо';
 }
 
-// Колода Шерифа, нижнего игрока.
+// Новый базовый класс Creature
+class Creature extends Card {
+    getDescriptions() {
+        return [getCreatureDescription(this), ...super.getDescriptions()];
+    }
+}
+
+// Класс Duck наследуется от Creature
+class Duck extends Creature {
+    constructor() {
+        super('Мирная утка', 2);
+    }
+
+    quacks() {
+        console.log('quack');
+    }
+
+    swims() {
+        console.log('float: both;');
+    }
+}
+
+// Класс Dog наследуется от Creature
+class Dog extends Creature {
+    constructor() {
+        super('Пес-бандит', 3);
+    }
+}
+
+// Колода Шерифа
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
 ];
 
-// Колода Бандита, верхнего игрока.
+// Колода Бандита
 const banditStartDeck = [
     new Dog(),
 ];
 
-
-// Создание игры.
+// Создание и запуск игры
 const game = new Game(seriffStartDeck, banditStartDeck);
-
-// Глобальный объект, позволяющий управлять скоростью всех анимаций.
 SpeedRate.set(1);
-
-// Запуск игры.
 game.play(false, (winner) => {
     alert('Победил ' + winner.name);
 });
