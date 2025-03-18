@@ -56,6 +56,7 @@ class Dog extends Creature {
     }
 }
 
+// Класс Trasher наследуется от Dog
 class Trasher extends Dog {
     constructor() {
         super();
@@ -77,18 +78,44 @@ class Trasher extends Dog {
     }
 }
 
+// Новый класс Gatling
+class Gatling extends Creature {
+    constructor() {
+        super('Гатлинг', 6);
+    }
+
+    attack(gameContext, continuation) {
+        const { oppositePlayer } = gameContext;
+        const targets = oppositePlayer.table;
+
+        const taskQueue = new TaskQueue();
+
+        // По очереди наносим 2 урона каждой карте противника
+        for (const card of targets) {
+            taskQueue.push(
+                () => this.dealDamageToCreature(2, card, gameContext, taskQueue.continueWith),
+                null,
+                200 // Задержка между атаками
+            );
+        }
+
+        taskQueue.continueWith(continuation);
+    }
+}
 
 // Колода Шерифа
 const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
-    new Duck(),
+    new Gatling(),
 ];
 
 // Колода Бандита
 const banditStartDeck = [
     new Trasher(),
+    new Dog(),
+    new Dog(),
 ];
 
 // Создание и запуск игры
