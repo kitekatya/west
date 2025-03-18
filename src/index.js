@@ -4,6 +4,7 @@ import TaskQueue from './TaskQueue.js';
 import SpeedRate from './SpeedRate.js';
 
 
+
 class Duck extends Card {
     constructor() {
         super('Мирная утка', 2);
